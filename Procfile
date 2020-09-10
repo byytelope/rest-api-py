@@ -1,0 +1,1 @@
+worker: python ./rest_api/api.py
