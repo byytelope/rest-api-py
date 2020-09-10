@@ -1,16 +1,23 @@
 import os
+from urllib.parse import urlparse
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy_utils import create_database, database_exists, drop_database
 
 app = Flask(__name__)
 CORS(app)
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
-DB_URL = f"sqlite:///{os.path.join(BASEDIR, 'db.sqlite')}"
+if os.environ.get("DATABASE_URL") is None:
+    db_user = os.environ["REST_DB_USER"]
+    db_pass = os.environ["REST_DB_PASSWORD"]
+    db_url = os.environ["REST_DB_HOST"]
+    db_id = os.environ["REST_DB"]
+
+    DB_URL = f"postgresql+psycopg2://{db_user}:{db_pass}@{db_url}:5432/{db_id}"
+else:
+    DB_URL = os.environ["DATABASE_URL"]
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DB_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -28,10 +35,11 @@ class Product(db.Model):
     price = db.Column(db.Float)
     in_stock = db.Column(db.Boolean)
 
-    def __init__(self, name, description, temperature, img, price, in_stock):
+    def __init__(self, name, description, is_cold, is_hot, img, price, in_stock):
         self.name = name
         self.description = description
-        self.temperature = temperature
+        self.is_cold = is_cold
+        self.is_hot = is_hot
         self.img = img
         self.price = price
         self.in_stock = in_stock
@@ -39,23 +47,29 @@ class Product(db.Model):
 
 class ProductSchema(ma.Schema):
     class Meta:
-        fields = ("id", "name", "description", "temperature", "img", "price", "in_stock")
+        fields = ("id", "name", "description", "is_cold", "is_hot", "img", "price", "in_stock")
 
 
 product_schema = ProductSchema()
 products_schema = ProductSchema(many=True)
 
 
+@app.route("/")
+def home():
+    return "<h1>It work la.</h1>"
+
+
 @app.route("/products", methods=["POST"])
 def add_product():
     name = request.json["name"]
     description = request.json["description"]
-    temperature = request.json["temperature"]
+    is_cold = request.json["is_cold"]
+    is_hot = request.json["is_hot"]
     img = request.json["img"]
     price = request.json["price"]
     in_stock = request.json["in_stock"]
 
-    new_product = Product(name, description, temperature, img, price, in_stock)
+    new_product = Product(name, description, is_cold, is_hot, img, price, in_stock)
 
     db.session.add(new_product)
     db.session.commit()
@@ -69,14 +83,16 @@ def update_product(id):
 
     name = request.json["name"]
     description = request.json["description"]
-    temperature = request.json["temperature"]
+    is_cold = request.json["is_cold"]
+    is_hot = request.json["is_hot"]
     img = request.json["img"]
     price = request.json["price"]
     in_stock = request.json["in_stock"]
 
     product.name = name
     product.description = description
-    product.temperature = temperature
+    product.is_cold = is_cold
+    product.is_hot = is_hot
     product.img = img
     product.price = price
     product.in_stock = in_stock
@@ -109,19 +125,5 @@ def delete_product(id):
     return product_schema.jsonify(product)
 
 
-@app.cli.command("resetdb")
-def resetdb_command():
-    if database_exists(DB_URL):
-        print("Deleting database.")
-        drop_database(DB_URL)
-    if not database_exists(DB_URL):
-        print("Creating database.")
-        create_database(DB_URL)
-
-    print("Creating tables.")
-    db.create_all()
-    print("Shiny!")
-
-
 if __name__ == "__main__":
-    app.run(threaded=True)
+    app.run(debug=True)
