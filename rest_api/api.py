@@ -8,7 +8,6 @@ from sqlalchemy_utils import create_database, database_exists, drop_database
 
 app = Flask(__name__)
 CORS(app)
-app.config["CORS_HEADERS"] = "Content-Type"
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
 DB_URL = f"sqlite:///{os.path.join(BASEDIR, 'db.sqlite')}"
