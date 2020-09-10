@@ -1,1 +1,1 @@
-worker: python ./rest_api/api.py
+worker: python rest_api/api.py
