@@ -23,21 +23,23 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
     description = db.Column(db.String(200))
-    price = db.Column(db.Float)
+    temperature = db.Column(db.String(10))
     img = db.Column(db.String(200))
+    price = db.Column(db.Float)
     in_stock = db.Column(db.Boolean)
 
-    def __init__(self, name, description, price, img, in_stock):
+    def __init__(self, name, description, temperature, img, price, in_stock):
         self.name = name
         self.description = description
-        self.price = price
+        self.temperature = temperature
         self.img = img
+        self.price = price
         self.in_stock = in_stock
 
 
 class ProductSchema(ma.Schema):
     class Meta:
-        fields = ("id", "name", "description", "price", "img", "in_stock")
+        fields = ("id", "name", "description", "temperature", "img", "price", "in_stock")
 
 
 product_schema = ProductSchema()
@@ -48,11 +50,12 @@ products_schema = ProductSchema(many=True)
 def add_product():
     name = request.json["name"]
     description = request.json["description"]
-    price = request.json["price"]
+    temperature = request.json["temperature"]
     img = request.json["img"]
+    price = request.json["price"]
     in_stock = request.json["in_stock"]
 
-    new_product = Product(name, description, price, img, in_stock)
+    new_product = Product(name, description, temperature, img, price, in_stock)
 
     db.session.add(new_product)
     db.session.commit()
@@ -66,14 +69,16 @@ def update_product(id):
 
     name = request.json["name"]
     description = request.json["description"]
-    price = request.json["price"]
+    temperature = request.json["temperature"]
     img = request.json["img"]
+    price = request.json["price"]
     in_stock = request.json["in_stock"]
 
     product.name = name
     product.description = description
-    product.price = price
+    product.temperature = temperature
     product.img = img
+    product.price = price
     product.in_stock = in_stock
 
     db.session.commit()
@@ -102,28 +107,6 @@ def delete_product(id):
     db.session.commit()
 
     return product_schema.jsonify(product)
-
-
-@app.cli.command("initdb")
-def resetdb_command():
-    if database_exists(DB_URL):
-        print("Database already exists.")
-    if not database_exists(DB_URL):
-        print("Initializing database.")
-        create_database(DB_URL)
-
-    print("Database initialized.")
-
-
-@app.cli.command("dropdb")
-def resetdb_command():
-    if database_exists(DB_URL):
-        print("Deleting database.")
-        drop_database(DB_URL)
-    if not database_exists(DB_URL):
-        print("Database doesn't exist.")
-
-    print("Database deleted.")
 
 
 @app.cli.command("resetdb")
