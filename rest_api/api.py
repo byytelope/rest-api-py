@@ -1,5 +1,4 @@
 import os
-from urllib.parse import urlparse
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -30,7 +29,8 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
     description = db.Column(db.String(200))
-    temperature = db.Column(db.String(10))
+    is_cold = db.Column(db.Boolean)
+    is_hot = db.Column(db.Boolean)
     img = db.Column(db.String(200))
     price = db.Column(db.Float)
     in_stock = db.Column(db.Boolean)
