@@ -1,1 +1,1 @@
-web: gunicorn app:rest_api/api.py
+web: gunicorn --chdir rest_api api:app
