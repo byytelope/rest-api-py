@@ -8,15 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 CORS(app)
 
-if os.environ.get("DATABASE_URL") is None:
-    db_user = os.environ["REST_DB_USER"]
-    db_pass = os.environ["REST_DB_PASSWORD"]
-    db_url = os.environ["REST_DB_HOST"]
-    db_id = os.environ["REST_DB"]
-
-    DB_URL = f"postgresql+psycopg2://{db_user}:{db_pass}@{db_url}:5432/{db_id}"
-else:
-    DB_URL = os.environ["DATABASE_URL"]
+DB_URL = os.environ["DATABASE_URL"]
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DB_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -28,10 +20,10 @@ ma = Marshmallow(app)
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True)
-    description = db.Column(db.String(200))
+    description = db.Column(db.String(400))
     is_cold = db.Column(db.Boolean)
     is_hot = db.Column(db.Boolean)
-    img = db.Column(db.String(200))
+    img = db.Column(db.String(400))
     price = db.Column(db.Float)
     in_stock = db.Column(db.Boolean)
 
